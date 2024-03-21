@@ -4,10 +4,14 @@ import chalk from 'chalk';
 import emojiStrip from 'emoji-strip';
 import ffmpeg from 'ffmpeg-static';
 import { getPlaylist } from './playlist.js';
-import { exec } from 'child_process';
+import { exec as execCallback } from 'child_process';
+import { promisify } from 'util';
+
+
+const exec = promisify(execCallback);
 
 const directoryDestiny = "";
-const playlistUrl = '';
+const playlistUrl = "";
 
 async function main() {
   try {
@@ -67,16 +71,13 @@ const downloadVideo = async (url) => {
 
     const mergeCommand = `"${ffmpeg}" -i "${videoFilePath}" -i "${audioFilePath}" -c:v copy -c:a aac "${outputFilePath}"`;
 
-    exec(mergeCommand, (error, stdout, stderr) => {
-      if (error) {
-        console.error(chalk.red(`Error when merging: ${error}`));
-      } else {
-        console.log(chalk.green(`\nDownloaded video: ${videoTitle}`));
+    await exec(mergeCommand);
 
-        fs.unlinkSync(videoFilePath);
-        fs.unlinkSync(audioFilePath);
-      }
-    });
+    console.log(chalk.green(`\nDownloaded video!`));
+
+    fs.unlinkSync(videoFilePath);
+    fs.unlinkSync(audioFilePath);
+
     
   } catch (error) {
     console.error(chalk.red(`Error processing video: ${error}`));
